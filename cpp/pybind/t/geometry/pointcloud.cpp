@@ -211,12 +211,26 @@ The attributes of the point cloud have different levels::
                    "output point cloud.");
     pointcloud.def(
             "voxel_down_sample",
-            [](const PointCloud& pointcloud, const double voxel_size) {
+            [](const PointCloud& pointcloud, const double voxel_size, const std::string& reduction) {
                 return pointcloud.VoxelDownSample(
-                        voxel_size, core::HashBackendType::Default);
+                        voxel_size, reduction);
             },
-            "Downsamples a point cloud with a specified voxel size.",
-            "voxel_size"_a);
+            "Downsamples a point cloud with a specified voxel size and a "
+                    "reduction type.",
+                    "voxel_size"_a, "reduction"_a = "mean",
+                    R"doc(Downsamples a point cloud with a specified voxel size.
+        Args:
+            voxel_size (float): The size of the voxel used to downsample the point cloud.
+            reduction (str): The approach to pool point properties in a voxel. Can only be "mean" at current.
+        Return:
+            A downsampled point cloud with point properties reduced in each voxel.
+        Example:
+            We will load the Eagle dataset, downsample it, and show the result::
+                eagle = o3d.data.EaglePointCloud()
+                pcd = o3d.t.io.read_point_cloud(eagle.path)
+                pcd_down = pcd.voxel_down_sample(voxel_size=0.05)
+                o3d.visualization.draw([{'name': 'pcd', 'geometry': pcd}, {'name': 'pcd_down', 'geometry': pcd_down}])
+            )doc");
     pointcloud.def("uniform_down_sample", &PointCloud::UniformDownSample,
                    "Downsamples a point cloud by selecting every kth index "
                    "point and its attributes.",

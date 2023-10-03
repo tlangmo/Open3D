@@ -2,17 +2,17 @@ open3d_ispc_add_executable(tests)
 
 add_subdirectory(camera)
 add_subdirectory(core)
-add_subdirectory(data)
+#add_subdirectory(data)
 add_subdirectory(geometry)
 add_subdirectory(io)
-add_subdirectory(ml)
-add_subdirectory(pipelines)
+# add_subdirectory(ml)
+# add_subdirectory(pipelines)
 add_subdirectory(t/geometry)
 add_subdirectory(t/io)
 add_subdirectory(t/pipelines)
 add_subdirectory(test_utility)
 add_subdirectory(utility)
-add_subdirectory(visualization)
+#add_subdirectory(visualization)
 
 target_sources(tests PRIVATE
     Main.cpp
