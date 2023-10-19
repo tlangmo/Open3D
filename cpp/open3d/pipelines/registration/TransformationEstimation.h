@@ -80,17 +80,17 @@ public:
     /// scaling to be 1.
     TransformationEstimationPointToPoint(bool with_scaling = false)
         : with_scaling_(with_scaling) {}
-    ~TransformationEstimationPointToPoint() override {}
+    virtual ~TransformationEstimationPointToPoint() override {}
 
 public:
     TransformationEstimationType GetTransformationEstimationType()
             const override {
         return type_;
     };
-    double ComputeRMSE(const geometry::PointCloud &source,
+    virtual double ComputeRMSE(const geometry::PointCloud &source,
                        const geometry::PointCloud &target,
                        const CorrespondenceSet &corres) const override;
-    Eigen::Matrix4d ComputeTransformation(
+    virtual Eigen::Matrix4d ComputeTransformation(
             const geometry::PointCloud &source,
             const geometry::PointCloud &target,
             const CorrespondenceSet &corres) const override;
@@ -109,6 +109,28 @@ private:
             TransformationEstimationType::PointToPoint;
 };
 
+class TransformationEstimationPointToPointWithCallback: public TransformationEstimationPointToPoint {
+public:
+    using CallbackType = std::function<void(Eigen::Matrix4d)>;
+    /// \brief Parameterized Constructor.
+    ///
+    /// \param with_scaling Set to True to estimate scaling, False to force
+    /// scaling to be 1.
+    TransformationEstimationPointToPointWithCallback(bool with_scaling, CallbackType callback_after_iteration)
+        : TransformationEstimationPointToPoint(with_scaling), callback_after_iteration_(callback_after_iteration) {}
+    virtual ~TransformationEstimationPointToPointWithCallback() override {}
+
+public:
+    Eigen::Matrix4d ComputeTransformation(
+            const geometry::PointCloud &source,
+            const geometry::PointCloud &target,
+            const CorrespondenceSet &corres) const override;
+
+private:
+    /// \brief Callback function which is called after each iteration.
+    CallbackType callback_after_iteration_;
+};
+
 /// \class TransformationEstimationPointToPlane
 ///
 /// Class to estimate a transformation for point to plane distance.
@@ -116,7 +138,7 @@ class TransformationEstimationPointToPlane : public TransformationEstimation {
 public:
     /// \brief Default Constructor.
     TransformationEstimationPointToPlane() {}
-    ~TransformationEstimationPointToPlane() override {}
+    virtual ~TransformationEstimationPointToPlane() override {}
 
     /// \brief Constructor that takes as input a RobustKernel \param kernel Any
     /// of the implemented statistical robust kernel for outlier rejection.
@@ -132,7 +154,7 @@ public:
     double ComputeRMSE(const geometry::PointCloud &source,
                        const geometry::PointCloud &target,
                        const CorrespondenceSet &corres) const override;
-    Eigen::Matrix4d ComputeTransformation(
+    virtual Eigen::Matrix4d ComputeTransformation(
             const geometry::PointCloud &source,
             const geometry::PointCloud &target,
             const CorrespondenceSet &corres) const override;
@@ -145,6 +167,33 @@ private:
     const TransformationEstimationType type_ =
             TransformationEstimationType::PointToPlane;
 };
+
+/// \class TransformationEstimationPointToPlaneWithCallback
+///
+/// Class to estimate a transformation for point to plane distance.
+class TransformationEstimationPointToPlaneWithCallback : public TransformationEstimationPointToPlane {
+public:
+    using CallbackType = std::function<void(Eigen::Matrix4d)>;
+    /// \brief Default Constructor.
+    TransformationEstimationPointToPlaneWithCallback(CallbackType callback_after_iteration ): callback_after_iteration_(callback_after_iteration) {}
+    virtual ~TransformationEstimationPointToPlaneWithCallback() override {}
+
+    /// \brief Constructor that takes as input a RobustKernel \param kernel Any
+    /// of the implemented statistical robust kernel for outlier rejection.
+    explicit TransformationEstimationPointToPlaneWithCallback(
+            std::shared_ptr<RobustKernel> kernel, CallbackType callback_after_iteration )
+        : TransformationEstimationPointToPlane(kernel),callback_after_iteration_(callback_after_iteration) {}
+
+public:
+    Eigen::Matrix4d ComputeTransformation(
+            const geometry::PointCloud &source,
+            const geometry::PointCloud &target,
+            const CorrespondenceSet &corres) const override;
+private:
+    /// \brief Callback function which is called after each iteration.
+    CallbackType callback_after_iteration_;
+};
+
 
 }  // namespace registration
 }  // namespace pipelines

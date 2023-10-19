@@ -42,6 +42,18 @@ Eigen::Matrix4d TransformationEstimationPointToPoint::ComputeTransformation(
     return Eigen::umeyama(source_mat, target_mat, with_scaling_);
 }
 
+
+Eigen::Matrix4d TransformationEstimationPointToPointWithCallback::ComputeTransformation(
+        const geometry::PointCloud &source,
+        const geometry::PointCloud &target,
+        const CorrespondenceSet &corres) const {
+    auto result = TransformationEstimationPointToPoint::ComputeTransformation(source, target, corres);
+    if (callback_after_iteration_) {
+        callback_after_iteration_(result);
+    }
+    return result;
+}
+
 double TransformationEstimationPointToPlane::ComputeRMSE(
         const geometry::PointCloud &source,
         const geometry::PointCloud &target,
@@ -87,6 +99,17 @@ Eigen::Matrix4d TransformationEstimationPointToPlane::ComputeTransformation(
             utility::SolveJacobianSystemAndObtainExtrinsicMatrix(JTJ, JTr);
 
     return is_success ? extrinsic : Eigen::Matrix4d::Identity();
+}
+
+Eigen::Matrix4d TransformationEstimationPointToPlaneWithCallback::ComputeTransformation(
+        const geometry::PointCloud &source,
+        const geometry::PointCloud &target,
+        const CorrespondenceSet &corres) const {
+    auto result = TransformationEstimationPointToPlane::ComputeTransformation(source, target, corres);
+    if (callback_after_iteration_) {
+        callback_after_iteration_(result);
+    }
+    return result;
 }
 
 }  // namespace registration

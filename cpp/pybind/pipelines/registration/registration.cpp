@@ -21,7 +21,7 @@
 #include "open3d/utility/Logging.h"
 #include "pybind/docstring.h"
 #include "pybind/pipelines/registration/registration.h"
-
+#include <pybind11/functional.h>
 namespace open3d {
 namespace pipelines {
 namespace registration {
@@ -203,6 +203,45 @@ The homogeneous transformation is given by
 Sets :math:`c = 1` if ``with_scaling`` is ``False``.
 )");
 
+        // open3d.registration.TransformationEstimationPointToPointWithCallback:
+        // TransformationEstimation
+        py::class_<TransformationEstimationPointToPointWithCallback,
+                PyTransformationEstimation<TransformationEstimationPointToPointWithCallback>,
+                TransformationEstimation>
+                te_p2p_cb(m, "TransformationEstimationPointToPointWithCallback",
+                        "Class to estimate a transformation for point to point "
+                        "distance. Optional callback function is called after each iteration.");
+        py::detail::bind_copy_functions<TransformationEstimationPointToPointWithCallback>(
+                te_p2p_cb);
+        te_p2p_cb.def(py::init([](bool with_scaling, TransformationEstimationPointToPointWithCallback::CallbackType callback_after_iteration) {
+                        return new TransformationEstimationPointToPointWithCallback(
+                                with_scaling, callback_after_iteration );
+                }),
+                "with_scaling"_a = false,
+                "callback_after_iteration"_a = py::none()
+                )
+                .def("__repr__",
+                        [](const TransformationEstimationPointToPointWithCallback &te) {
+                        return std::string(
+                                        "TransformationEstimationPointToPointWithCallback ") +
+                                (te.with_scaling_
+                                        ? std::string("with scaling.")
+                                        : std::string("without scaling."));
+                        })
+                .def_readwrite(
+                        "with_scaling",
+                        &TransformationEstimationPointToPointWithCallback::with_scaling_,
+                        R"(Set to ``True`` to estimate scaling, ``False`` to force
+        scaling to be ``1``.
+
+        The homogeneous transformation is given by
+
+        :math:`T = \begin{bmatrix} c\mathbf{R} & \mathbf{t} \\ \mathbf{0} & 1 \end{bmatrix}`
+
+        Sets :math:`c = 1` if ``with_scaling`` is ``False``.
+        )");
+
+
     // open3d.registration.TransformationEstimationPointToPlane:
     // TransformationEstimation
     py::class_<TransformationEstimationPointToPlane,
@@ -226,6 +265,35 @@ Sets :math:`c = 1` if ``with_scaling`` is ``False``.
                  })
             .def_readwrite("kernel",
                            &TransformationEstimationPointToPlane::kernel_,
+                           "Robust Kernel used in the Optimization");
+
+        // open3d.registration.TransformationEstimationPointToPlaneWithCallback:
+    // TransformationEstimation
+    py::class_<TransformationEstimationPointToPlaneWithCallback,
+               PyTransformationEstimation<TransformationEstimationPointToPlaneWithCallback>,
+               TransformationEstimation>
+            te_p2l_cb(m, "TransformationEstimationPointToPlaneWithCallback",
+                   "Class to estimate a transformation for point to plane "
+                   "distance. Optional callback function is called after each iteration.");
+    py::detail::bind_copy_functions<TransformationEstimationPointToPlaneWithCallback>(
+            te_p2l_cb);
+    te_p2l_cb.def(py::init([](TransformationEstimationPointToPlaneWithCallback::CallbackType callback_after_iteration) {
+                   return new TransformationEstimationPointToPlaneWithCallback(
+                           callback_after_iteration);
+               }),
+               "callback_after_iteration"_a)
+             .def(py::init([](std::shared_ptr<RobustKernel> kernel, TransformationEstimationPointToPlaneWithCallback::CallbackType callback_after_iteration) {
+                   return new TransformationEstimationPointToPlaneWithCallback(
+                           std::move(kernel), callback_after_iteration);
+               }),
+               "kernel"_a,
+               "callback_after_iteration"_a)
+            .def("__repr__",
+                 [](const TransformationEstimationPointToPlaneWithCallback &te) {
+                     return std::string("TransformationEstimationPointToPlaneWithCallback");
+                 })
+            .def_readwrite("kernel",
+                           &TransformationEstimationPointToPlaneWithCallback::kernel_,
                            "Robust Kernel used in the Optimization");
 
     // open3d.registration.TransformationEstimationForColoredICP :
