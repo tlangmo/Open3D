@@ -18,6 +18,13 @@ namespace open3d {
 namespace pipelines {
 namespace registration {
 
+static RegistrationProgressCallback registration_progress_callback{nullptr};
+
+void SetRegistrationProgressCallback(RegistrationProgressCallback cb)
+{
+    registration_progress_callback = cb;
+}
+
 static RegistrationResult GetRegistrationResultAndCorrespondences(
         const geometry::PointCloud &source,
         const geometry::PointCloud &target,
@@ -154,9 +161,13 @@ RegistrationResult RegistrationICP(
         transformation = update * transformation;
         pcd.Transform(update);
         RegistrationResult backup = result;
+        
         result = GetRegistrationResultAndCorrespondences(
                 pcd, target, kdtree, max_correspondence_distance,
                 transformation);
+        if (registration_progress_callback) {
+            registration_progress_callback(result);
+        }
         if (std::abs(backup.fitness_ - result.fitness_) <
                     criteria.relative_fitness_ &&
             std::abs(backup.inlier_rmse_ - result.inlier_rmse_) <
@@ -228,7 +239,9 @@ RegistrationResult RegistrationRANSACBasedOnCorrespondence(
 
                 if (result.IsBetterRANSACThan(best_result_local)) {
                     best_result_local = result;
-
+                    if (registration_progress_callback) {
+                        registration_progress_callback(best_result_local);
+                    }
                     double corres_inlier_ratio =
                             EvaluateInlierCorrespondenceRatio(
                                     pcd, target, corres,
@@ -274,6 +287,9 @@ RegistrationResult RegistrationRANSACBasedOnCorrespondence(
             "RANSAC exits after {:d} validations. Best inlier ratio {:e}, "
             "RMSE {:e}",
             total_validation, best_result.fitness_, best_result.inlier_rmse_);
+    if (registration_progress_callback) {
+        registration_progress_callback(best_result);
+    }
     return best_result;
 }
 

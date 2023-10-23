@@ -10,7 +10,7 @@
 #include <Eigen/Core>
 #include <tuple>
 #include <vector>
-
+#include <functional>
 #include "open3d/pipelines/registration/CorrespondenceChecker.h"
 #include "open3d/pipelines/registration/TransformationEstimation.h"
 #include "open3d/utility/Eigen.h"
@@ -219,6 +219,11 @@ Eigen::Matrix6d GetInformationMatrixFromPointClouds(
         const geometry::PointCloud &target,
         double max_correspondence_distance,
         const Eigen::Matrix4d &transformation);
+
+using RegistrationProgressCallback = std::function<void (const RegistrationResult& result)>;
+
+/// \brief Set a callback function which reports intermediate results during registration
+void SetRegistrationProgressCallback(RegistrationProgressCallback cb);
 
 }  // namespace registration
 }  // namespace pipelines

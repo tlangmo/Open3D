@@ -587,6 +587,13 @@ static const std::unordered_map<std::string, std::string>
                  "``target``"}};
 
 void pybind_registration_methods(py::module &m) {
+    m.def("set_registration_progress_callback", &SetRegistrationProgressCallback,
+              "Function to set the callback function for registration "
+              "progress. "
+              "The callback function takes a single argument of type "
+              "``RegistrationResult``.",
+              "callback"_a);
+
     m.def("evaluate_registration", &EvaluateRegistration,
           py::call_guard<py::gil_scoped_release>(),
           "Function for evaluating registration between point clouds",
