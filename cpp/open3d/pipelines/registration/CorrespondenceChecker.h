@@ -143,6 +143,36 @@ public:
     double normal_angle_threshold_;
 };
 
+/// \class CorrespondenceCheckerBasedOnTransformAxisAngle
+///
+/// \brief Class to check if the transform exceeds certain axis angle limits.
+///
+/// That is useful if some prior knowledge can be used
+class CorrespondenceCheckerBasedOnTransformAxisAngle : public CorrespondenceChecker {
+public:
+    /// \brief Parameterized Constructor.
+    ///
+    /// \param min_angle_threshold_rad Radian value for minimum angle threshold.
+    /// \param max_angle_threshold_rad Radian value for maximum angle threshold.
+    CorrespondenceCheckerBasedOnTransformAxisAngle(double min_angle_threshold_rad, double max_angle_threshold_rad)
+        : CorrespondenceChecker(false), // no point cloud alignment required
+          min_angle_threshold_rad_(min_angle_threshold_rad),
+          max_angle_threshold_rad_(max_angle_threshold_rad) {}
+    ~CorrespondenceCheckerBasedOnTransformAxisAngle() override {}
+
+public:
+    bool Check(const geometry::PointCloud &source,
+               const geometry::PointCloud &target,
+               const CorrespondenceSet &corres,
+               const Eigen::Matrix4d &transformation) const override;
+
+public:
+    /// Radian value for minimum angle threshold.
+    double min_angle_threshold_rad_;
+    /// Radian value for maximum angle threshold.
+    double max_angle_threshold_rad_;
+};
+
 }  // namespace registration
 }  // namespace pipelines
 }  // namespace open3d

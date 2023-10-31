@@ -438,6 +438,28 @@ must hold true for all edges.)");
                            &CorrespondenceCheckerBasedOnNormal::
                                    normal_angle_threshold_,
                            "Radian value for angle threshold.");
+    
+    // open3d.registration.CorrespondenceCheckerBasedOnTransformAxisAngle:
+    // CorrespondenceChecker
+    py::class_<CorrespondenceCheckerBasedOnTransformAxisAngle,
+               PyCorrespondenceChecker<CorrespondenceCheckerBasedOnTransformAxisAngle>,
+               CorrespondenceChecker>
+            cc_aa(m, "CorrespondenceCheckerBasedOnTransformAxisAngle",
+                 "Class to check if the transform exceeds certain axis angle limits.");
+    py::detail::bind_copy_functions<CorrespondenceCheckerBasedOnTransformAxisAngle>(cc_aa);
+    cc_aa.def(py::init([](double min_angle_threshold_rad, double max_angle_threshold_rad) {
+                 return new CorrespondenceCheckerBasedOnTransformAxisAngle(
+                         min_angle_threshold_rad, max_angle_threshold_rad);
+             }),
+             "min_angle_threshold_rad"_a, "max_angle_threshold_rad"_a)
+            .def("__repr__",
+                 [](const CorrespondenceCheckerBasedOnTransformAxisAngle &c) {
+                     return fmt::format(
+                             ""
+                             "CorrespondenceCheckerBasedOnTransformAxisAngle with "
+                             "min_angle_threshold_rad={:f}, max_angle_threshold_rad={:f}",
+                             c.min_angle_threshold_rad_, c.max_angle_threshold_rad_);
+                 });
 
     // open3d.registration.FastGlobalRegistrationOption:
     py::class_<FastGlobalRegistrationOption> fgr_option(
@@ -587,6 +609,13 @@ static const std::unordered_map<std::string, std::string>
                  "``target``"}};
 
 void pybind_registration_methods(py::module &m) {
+    m.def("set_registration_progress_callback", &SetRegistrationProgressCallback,
+              "Function to set the callback function for registration "
+              "progress. "
+              "The callback function takes a single argument of type "
+              "``RegistrationResult``.",
+              "callback"_a);
+
     m.def("evaluate_registration", &EvaluateRegistration,
           py::call_guard<py::gil_scoped_release>(),
           "Function for evaluating registration between point clouds",

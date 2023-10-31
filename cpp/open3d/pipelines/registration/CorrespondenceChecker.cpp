@@ -82,6 +82,18 @@ bool CorrespondenceCheckerBasedOnNormal::Check(
     return true;
 }
 
+
+bool CorrespondenceCheckerBasedOnTransformAxisAngle::Check(const geometry::PointCloud &source,
+    const geometry::PointCloud &target,
+    const CorrespondenceSet &corres,
+    const Eigen::Matrix4d &transformation) const {
+        Eigen::Matrix3d R = transformation.block<3,3>(0,0);
+        Eigen::AngleAxisd aa(R);
+        double angle = std::abs(aa.angle());
+        return angle >= min_angle_threshold_rad_ && angle <= max_angle_threshold_rad_;
+}
+
+
 }  // namespace registration
 }  // namespace pipelines
 }  // namespace open3d
