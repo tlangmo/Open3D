@@ -1,3 +1,8 @@
+
+## 2024-02-01 aescape-develop
+### Added
+- Added callback function which reports intermediate results during registration
+
 ## Master
 
 * Python 3.9 support. Tensorflow bump 2.4.1 -> 2.5.0. PyTorch bump 1.7.1 -> 1.8.1 (LTS)
