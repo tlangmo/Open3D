@@ -1,5 +1,9 @@
 ## 2024-02-01 
 ### Added
+- Python GIL release for `PointCloud::OrientNormals*`
+
+## 2024-02-01 
+### Added
 - Python GIL release for `PointCloud::EstimateNormals` and `PointCloud::VoxelDownSample`
 
 ## 2024-02-01 

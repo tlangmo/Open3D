@@ -131,14 +131,17 @@ void pybind_pointcloud(py::module &m) {
                  "fast_normal_computation"_a = true)
             .def("orient_normals_to_align_with_direction",
                  &PointCloud::OrientNormalsToAlignWithDirection,
+                 py::call_guard<py::gil_scoped_release>(),
                  "Function to orient the normals of a point cloud",
                  "orientation_reference"_a = Eigen::Vector3d(0.0, 0.0, 1.0))
             .def("orient_normals_towards_camera_location",
                  &PointCloud::OrientNormalsTowardsCameraLocation,
+                 py::call_guard<py::gil_scoped_release>(),
                  "Function to orient the normals of a point cloud",
                  "camera_location"_a = Eigen::Vector3d(0.0, 0.0, 0.0))
             .def("orient_normals_consistent_tangent_plane",
                  &PointCloud::OrientNormalsConsistentTangentPlane,
+                 py::call_guard<py::gil_scoped_release>(),
                  "Function to orient the normals with respect to consistent "
                  "tangent planes",
                  "k"_a)
