@@ -1,5 +1,9 @@
 
-## 2024-02-01 aescape-develop
+## 2024-02-01 
+### Added
+- v0.17.0 Backport patch for fixing issue https://github.com/isl-org/Open3D/pull/6249/
+
+## 2024-02-01 
 ### Added
 - Added callback function which reports intermediate results during registration
 
