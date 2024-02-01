@@ -56,6 +56,7 @@ void pybind_pointcloud(py::module &m) {
                  "pointcloud.",
                  "indices"_a, "invert"_a = false)
             .def("voxel_down_sample", &PointCloud::VoxelDownSample,
+                 py::call_guard<py::gil_scoped_release>(),
                  "Function to downsample input pointcloud into output "
                  "pointcloud with "
                  "a voxel. Normals and colors are averaged if they exist.",
@@ -122,6 +123,7 @@ void pybind_pointcloud(py::module &m) {
                  "average.",
                  "nb_neighbors"_a, "std_ratio"_a, "print_progress"_a = false)
             .def("estimate_normals", &PointCloud::EstimateNormals,
+                 py::call_guard<py::gil_scoped_release>(),
                  "Function to compute the normals of a point cloud. Normals "
                  "are oriented with respect to the input point cloud if "
                  "normals exist",
