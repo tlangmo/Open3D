@@ -99,6 +99,7 @@ openblas_print_env() {
     echo "[openblas_print_env()] CMAKE_VERSION: ${CMAKE_VERSION}"
     echo "[openblas_print_env()] PYTHON_VERSION: ${PYTHON_VERSION}"
     echo "[openblas_print_env()] DEVELOPER_BUILD: ${DEVELOPER_BUILD}"
+    echo "[openblas_print_env()] BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}"
 }
 
 openblas_export_env() {
@@ -117,6 +118,7 @@ openblas_export_env() {
         export BASE_IMAGE=arm64v8/ubuntu:20.04
         export CONDA_SUFFIX=aarch64
         export CMAKE_VERSION=${CMAKE_VERSION_AARCH64}
+        export BUILD_SHARED_LIBS=ON
     else
         echo "Invalid platform."
         print_usage_and_exit_docker_build
@@ -151,7 +153,7 @@ openblas_export_env() {
     fi
 
     # For docker_test.sh
-    export BUILD_SHARED_LIBS=OFF
+    #export BUILD_SHARED_LIBS=OFF
     export BUILD_CUDA_MODULE=OFF
     export BUILD_PYTORCH_OPS=OFF
     export BUILD_TENSORFLOW_OPS=OFF
@@ -168,6 +170,7 @@ openblas_build() {
         --build-arg CMAKE_VERSION="${CMAKE_VERSION}" \
         --build-arg PYTHON_VERSION="${PYTHON_VERSION}" \
         --build-arg DEVELOPER_BUILD="${DEVELOPER_BUILD}" \
+        --build-arg BUILD_SHARED_LIBS="${BUILD_SHARED_LIBS}" \
         -t "${DOCKER_TAG}" \
         -f docker/Dockerfile.openblas .
     popd
