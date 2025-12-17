@@ -95,7 +95,10 @@ if _build_config["BUILD_CUDA_MODULE"]:
             "binding library.",
             ImportWarning,
         )
-
+    # On DGX Spark, we need to use LD_PRELOAD 
+    if _build_config["BUILD_CUDA_MODULE"] and __DEVICE_API__ == "cpu":
+        warnings.warn("CUDA mode failed. Please LD_PRELOAD 'libOpen3D.so.0.19'. E.g. 'export LD_PRELOAD=\"$(find . -path \"*site-packages/open3d/cuda/libOpen3D.so.0.19\" -print -quit 2>/dev/null)\"'", RuntimeWarning)
+        
 if __DEVICE_API__ == "cpu":
     from open3d.cpu.pybind import (
         core,
