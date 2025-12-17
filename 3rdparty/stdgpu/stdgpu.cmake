@@ -7,8 +7,8 @@ include(ExternalProject)
 ExternalProject_Add(
     ext_stdgpu
     PREFIX stdgpu
-    URL https://github.com/stotko/stdgpu/archive/2588168d226bd17229dbf58d821549580791089d.tar.gz
-    URL_HASH SHA256=86e50789bbe21c57f64358c6acbd4481d56c1e45ce9ba1fb5c5c8482c3973215
+    URL https://github.com/stotko/stdgpu/archive/025465a77bce2c09c15f02e9b8aa43643d055039.tar.gz
+    URL_HASH SHA256=185cea0b5cc29a8a68f81d1a32376b744f135c4664074bc0b3ee41673b5a08be
     DOWNLOAD_DIR "${OPEN3D_THIRD_PARTY_DOWNLOAD_DIR}/stdgpu"
     UPDATE_COMMAND ""
     CMAKE_ARGS
@@ -19,7 +19,6 @@ ExternalProject_Add(
         -DSTDGPU_BUILD_TESTS=OFF
         -DSTDGPU_BUILD_BENCHMARKS=OFF
         -DSTDGPU_ENABLE_CONTRACT_CHECKS=OFF
-        -DTHRUST_INCLUDE_DIR=${CUDAToolkit_INCLUDE_DIRS}
         ${ExternalProject_CMAKE_ARGS_hidden}
     CMAKE_CACHE_ARGS    # Lists must be passed via CMAKE_CACHE_ARGS
         -DCMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}

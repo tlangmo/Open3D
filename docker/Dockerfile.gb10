@@ -1,0 +1,55 @@
+# Dockerfile for NVIDIA GB10 (DGX Spark) - ARM64 + CUDA 13.0
+# Development container - mount source and build as volumes
+ARG BASE_IMAGE=nvcr.io/nvidia/cuda:13.0.1-devel-ubuntu24.04
+FROM ${BASE_IMAGE}
+
+ARG CMAKE_VERSION=cmake-3.29.2-linux-aarch64
+ARG PYTHON_VERSION=3.12
+
+ENV PYTHON_VERSION=${PYTHON_VERSION}
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
+ENV SUDO=command
+
+SHELL ["/bin/bash", "-c"]
+
+# Basic dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    git \
+    wget \
+ && rm -rf /var/lib/apt/lists/*
+
+# CMake (ARM64)
+RUN CMAKE_VERSION_NUMBERS=$(echo "${CMAKE_VERSION}" | cut -d"-" -f2) \
+ && wget -q https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION_NUMBERS}/${CMAKE_VERSION}.tar.gz \
+ && tar -xf ${CMAKE_VERSION}.tar.gz \
+ && cp -ar ${CMAKE_VERSION} /root/ \
+ && rm ${CMAKE_VERSION}.tar.gz
+ENV PATH=/root/${CMAKE_VERSION}/bin:${PATH}
+
+# Miniconda (ARM64/aarch64)
+ENV PATH="/root/miniconda3/bin:${PATH}"
+ENV CONDA_PLUGINS_AUTO_ACCEPT_TOS=true
+RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh \
+ && bash Miniconda3-latest-Linux-aarch64.sh -b \
+ && rm Miniconda3-latest-Linux-aarch64.sh \
+ && conda --version
+ENV PATH="/root/miniconda3/envs/open3d/bin:${PATH}"
+RUN conda create -y -n open3d python=${PYTHON_VERSION}
+RUN which python && python --version
+
+# Open3D C++ dependencies - copy just the script first
+COPY ./util/install_deps_ubuntu.sh /tmp/
+RUN /tmp/install_deps_ubuntu.sh assume-yes \
+ && rm -rf /var/lib/apt/lists/*
+
+# Python build dependencies
+RUN python -m pip install --upgrade pip wheel setuptools numpy
+
+WORKDIR /root/Open3D
+
+# Entry point for interactive use
+CMD ["/bin/bash"]

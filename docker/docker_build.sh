@@ -76,6 +76,11 @@ OPTION:
     cuda_wheel_py310           : CUDA Python 3.10 wheel, release mode
     cuda_wheel_py311           : CUDA Python 3.11 wheel, release mode
     cuda_wheel_py312           : CUDA Python 3.12 wheel, release mode
+
+    # GB10 ARM64 CUDA 13.0 (Dockerfile.gb10)
+    gb10                       : Build GB10 dev container image
+    gb10-run                   : Run build with mounted volumes (iterative)
+    gb10-shell                 : Start interactive shell in GB10 container
 "
 
 HOST_OPEN3D_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. >/dev/null 2>&1 && pwd)"
@@ -178,6 +183,80 @@ openblas_build() {
     docker run -v "${PWD}:/opt/mount" --rm "${DOCKER_TAG}" \
         bash -c "cp /*.whl /opt/mount \
               && chown $(id -u):$(id -g) /opt/mount/*.whl"
+}
+
+gb10_build() {
+    echo "[gb10_build()] Building GB10 dev container image"
+
+    pushd "${HOST_OPEN3D_ROOT}"
+    docker build \
+        -t open3d-ci:gb10 \
+        -f docker/Dockerfile.gb10 .
+    popd
+
+    echo ""
+    echo "Image built: open3d-ci:gb10"
+    echo ""
+    echo "To run interactively with mounted source:"
+    echo "  ./docker/docker_build.sh gb10-run"
+    echo ""
+    echo "Or manually:"
+    echo "  docker run --gpus all -it --rm \\"
+    echo "    -v ${HOST_OPEN3D_ROOT}:/root/Open3D \\"
+    echo "    open3d-ci:gb10"
+}
+
+gb10_run() {
+    echo "[gb10_run()] Running GB10 container with mounted source"
+
+    # Create build directory if it doesn't exist
+    mkdir -p "${HOST_OPEN3D_ROOT}/build-gb10"
+
+    docker run --gpus all --rm \
+        -v "${HOST_OPEN3D_ROOT}:/root/Open3D" \
+        -v "${HOST_OPEN3D_ROOT}/build-gb10:/root/Open3D/build" \
+        -e "DEVELOPER_BUILD=ON" \
+        open3d-ci:gb10 \
+        bash -c '
+            cd /root/Open3D/build
+            pip install -r /root/Open3D/python/requirements_build.txt
+            pip install -r /root/Open3D/python/requirements.txt
+            cmake \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DDEVELOPER_BUILD=ON \
+                -DBUILD_SHARED_LIBS=ON \
+                -DBUILD_CUDA_MODULE=ON \
+                -DBUILD_COMMON_CUDA_ARCHS=OFF \
+                -DBUILD_COMMON_ISPC_ISAS=OFF \
+                -DBUILD_TENSORFLOW_OPS=OFF \
+                -DBUILD_PYTORCH_OPS=OFF \
+                -DBUILD_AZURE_KINECT=OFF \
+                -DBUILD_LIBREALSENSE=OFF \
+                -DBUILD_JUPYTER_EXTENSION=OFF \
+                -DBUILD_GUI=OFF \
+                -DWITH_IPP=OFF \
+                -DBUILD_SYCL_MODULE=OFF \
+                -DGLIBCXX_USE_CXX11_ABI=ON \
+                -DBUILD_UNIT_TESTS=ON \
+                -DBUILD_BENCHMARKS=OFF \
+                ..
+            make -j$(nproc) pip-package
+            cp lib/python_package/pip_package/*.whl /root/Open3D/
+        '
+
+    echo ""
+    echo "Wheel should be in: ${HOST_OPEN3D_ROOT}/"
+}
+
+gb10_shell() {
+    echo "[gb10_shell()] Starting interactive shell in GB10 container"
+
+    mkdir -p "${HOST_OPEN3D_ROOT}/build-gb10"
+
+    docker run --gpus all -it --rm \
+        -v "${HOST_OPEN3D_ROOT}:/root/Open3D" \
+        -v "${HOST_OPEN3D_ROOT}/build-gb10:/root/Open3D/build" \
+        open3d-ci:gb10
 }
 
 cuda_wheel_build() {
@@ -609,6 +688,17 @@ function main() {
     sycl-static)
         sycl-static_export_env
         ci_build
+        ;;
+
+    # GB10 ARM64
+    gb10)
+        gb10_build
+        ;;
+    gb10-run)
+        gb10_run
+        ;;
+    gb10-shell)
+        gb10_shell
         ;;
 
     # CUDA wheels
